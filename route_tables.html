@@ -1,0 +1,1197 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>ルートテーブル</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- JS Assets extracted to separate files -->
+<style>
+        html { scroll-behavior: smooth; }
+.property-value {
+    white-space: pre-wrap;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    word-break: break-all;
+}
+pre { margin: 0; white-space: pre-wrap; }
+
+/* CSS Variables Definition */
+:root {
+    /* Primary Colors (Blue) */
+    --color-primary: #2563eb;       /* blue-600 */
+    --color-primary-hover: #1d4ed8; /* blue-700 approx */
+    --color-link: #3b82f6;          /* blue-500 */
+    --color-link-hover: #60a5fa;    /* blue-400 */
+    --color-link-light: #93c5fd;    /* blue-300 */
+    --color-link-lighter: #bfdbfe;  /* blue-200 */
+    
+    /* Background Colors (Blue tint) */
+    --color-bg-primary-tint: #eff6ff; /* blue-50 */
+    
+    /* Text Colors (Slate) */
+    --color-text-header: #0f172a;   /* slate-900 */
+    --color-text-main: #334155;     /* slate-700 */
+    --color-text-sub: #475569;      /* slate-600 */
+    --color-text-muted: #94a3b8;    /* slate-400 */
+    --color-text-inverse: #f8fafc;  /* slate-50 */
+    
+    /* Border/Background Colors (Slate) */
+    --color-border: #cbd5e1;        /* slate-300 */
+    --color-border-dark: #94a3b8;   /* slate-400 */
+    --color-bg-sub: #f8fafc;        /* slate-50 */
+    --color-bg-dark: #475569;       /* slate-600 (Tooltip bg) */
+    
+    /* Status/Badge Colors (Green) */
+    --color-success-text: #15803d;  /* green-700 */
+    --color-success-bg: #f0fdf4;    /* green-50 */
+    --color-success-border: #bbf7d0;/* green-200 */
+    --color-success-icon: #22c55e;  /* green-500 */
+
+    /* Resizer Gradients */
+    --color-resizer-gradient-start: rgba(59, 130, 246, 0.05);
+    --color-resizer-gradient-mid: rgba(59, 130, 246, 0.15);
+
+
+    /* Column Resizing Widths */
+    --col-width-level-0: 25%;
+    --col-width-level-1: 30%;
+    --col-width-level-2: 35%;
+    --col-width-level-3: 40%;
+    --col-width-level-default: 30%;
+
+    /* Sidebar Width */
+    --sidebar-width: 16rem;
+}
+
+/* Common Table Classes - Consolidation */
+
+/* Table Container - Standard wrapper for all tables */
+.table-container-standard {
+    overflow: visible;
+    background-color: white;
+    border-radius: 0.5rem; /* rounded-lg */
+    border: 1px solid var(--color-border);
+}
+
+/* Table Base - Common table styling */
+.table-base {
+    width: 100%;
+    text-align: left;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+/* Value Cell Wrapper - Nested table container */
+.value-cell-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: visible;
+    flex-grow: 1;
+    min-width: 0;
+}
+
+/* Existing nested-table class */
+.nested-table { width: 100%; border-collapse: collapse; margin-top: 0.25rem; margin-bottom: 0.25rem; table-layout: fixed; }
+.nested-table th, .nested-table td { padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); vertical-align: top; }
+.nested-table th { background-color: var(--color-bg-sub); font-size: 0.75rem; text-transform: uppercase; color: var(--color-text-sub); font-weight: 600; text-align: left; }
+.badge-fn { background-color: var(--color-success-bg); color: var(--color-success-text); padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace; font-size: 0.75rem; border: 1px solid var(--color-success-border); display: inline-block;}
+
+.nested-table th { position: relative; }
+
+.col-resizer {
+    position: absolute;
+    top: 0;
+    right: -8px;
+    width: 16px;
+    height: 100%;
+    background: transparent;
+    cursor: ew-resize;
+    z-index: 20;
+    touch-action: none;
+}
+
+/* Ensure top-level table cells have vertical border for resizing visual */
+.top-level-table > thead > tr > th:first-child {
+    border-right: 1px solid var(--color-border-dark);
+}
+.top-level-table > tbody > tr > td:first-child {
+    border-right: 1px solid var(--color-border);
+}
+
+/* Round corners for table within table-container-standard */
+.table-container-standard .top-level-table > thead > tr:first-child > th:first-child {
+    border-top-left-radius: 0.5rem;
+}
+.table-container-standard .top-level-table > thead > tr:first-child > th:last-child {
+    border-top-right-radius: 0.5rem;
+}
+
+/* Top-level table row borders */
+.top-level-table thead tr {
+    border-bottom: 1px solid var(--color-border-dark);
+}
+.top-level-table tbody tr {
+    border-bottom: 1px solid var(--color-border);
+}
+.top-level-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+/* Disable interaction during resizing to prevent flickering and cursor changes */
+body.is-resizing .hover-row { 
+    pointer-events: none; 
+}
+
+/* Sidebar Resizer */
+.sidebar-resizer {
+    position: absolute;
+    top: 0;
+    right: -8px;
+    width: 16px;
+    height: 100%;
+    background: transparent;
+    cursor: ew-resize;
+    z-index: 100;
+    touch-action: none;
+}
+
+/* Ensure body pointer events when sidebar resizing */
+body.is-sidebar-resizing {
+    cursor: ew-resize;
+    user-select: none;
+}
+body.is-sidebar-resizing iframe {
+    pointer-events: none;
+}
+
+/* Display Modes CSS */
+
+/* 
+    * Transition Logic:
+    * We use CSS transitions for smooth switching.
+    * - Inline Description: "grid-template-rows" trick for height, plus opacity.
+    * - Tooltip Icon: "max-width" + "opacity" + "margin" to collapse/expand horizontally.
+    */
+
+/* エイリアス表示切り替え設定 */
+.alias-wrapper {
+    display: block;
+}
+.alias-text {
+    display: block;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: #94a3b8;
+}
+body.hide-deep-aliases .alias-wrapper {
+    display: none;
+}
+
+.elem-inline-desc-wrapper {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    visibility: hidden;
+    transition: grid-template-rows 0.3s ease-in-out, opacity 0.3s ease-in-out, visibility 0.3s;
+}
+
+.elem-tooltip {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    /* Transition opacity/margin on the container */
+    transition: opacity 0.3s ease-in-out, margin 0.3s ease-in-out, transform 0.3s ease-in-out;
+    opacity: 0;
+    margin-left: 0;
+    transform: scale(0.8);
+}
+
+.tooltip-wrapper {
+    overflow: hidden;
+    transition: max-width 0.3s ease-in-out;
+    max-width: 0;
+    display: flex; /* Ensure SVG takes space */
+}
+
+/* Tooltip Mode: Show tooltip icon, Hide inline desc */
+.mode-tooltip .elem-tooltip {
+    opacity: 1;
+    margin-left: 0.5rem; /* gap-2 equivalent */
+    transform: scale(1);
+}
+
+.mode-tooltip .tooltip-wrapper {
+        max-width: 40px; /* Sufficient for w-5 (20px) */
+}
+
+/* Inline Mode: Show inline description, Hide tooltip icon */
+.mode-inline .elem-inline-desc-wrapper {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    visibility: visible;
+}
+
+/* BUTTON STATES (CSS Driven) */
+.mode-btn {
+    background-color: white;
+    color: var(--color-text-main);
+}
+.mode-btn:hover {
+    color: var(--color-text-header);
+}
+
+/* Active State overrides */
+.mode-inline .mode-btn[data-mode="inline"],
+.mode-tooltip .mode-btn[data-mode="tooltip"] {
+    background-color: var(--color-primary);
+    color: white;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Tooltip styling */
+.tooltip-container { 
+    position: relative; 
+    cursor: pointer; 
+    margin-left: 4px; 
+    color: var(--color-link); 
+}
+
+.tooltip-content {
+    position: absolute;
+    bottom: 100%;
+    right: -8px;
+    left: auto;
+    transform: none;
+    padding: 8px;
+    background: var(--color-bg-dark);
+    color: var(--color-text-inverse);
+    border-radius: 4px;
+    font-size: 0.8rem;
+    width: max-content;
+    max-width: none;
+    min-width: 200px;
+    height: auto;
+    z-index: 9999;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    font-weight: normal;
+    line-height: 1.5;
+    white-space: pre;
+    text-align: left;
+    margin-bottom: 6px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+}
+
+/* Links inside tooltips */
+.tooltip-content a {
+    color: var(--color-link-light);
+    text-decoration: underline;
+}
+.tooltip-content a:hover { color: var(--color-link-lighter); }
+
+/* ツールチップホバー時の表示制御 */
+.tooltip-container:hover .tooltip-content {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ピン留め時のツールチップ表示制御 */
+.tooltip-container.pinned .tooltip-content {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ツールチップモード時の行ホバーによる表示制御 */
+.mode-tooltip .hover-row:hover:not(:has(.hover-row:hover)) > td > div > .tooltip-container .tooltip-content {
+    opacity: 1;
+    visibility: visible;
+}
+
+.tooltip-arrow {
+    position: absolute;
+    top: 100%;
+    right: 12px;
+    left: auto;
+    margin-left: 0;
+    border-width: 5px;
+    border-style: solid;
+    border-color: var(--color-bg-dark) transparent transparent transparent;
+}
+
+/* Inline description styling */
+.elem-inline-desc {
+    white-space: pre-wrap;
+    line-height: 1.5;
+    text-align: left;
+}
+
+/* プロパティキーセルの基本スタイリング */
+.property-key-cell {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-weight: 600 !important;
+    color: var(--color-text-header) !important;
+    position: relative;
+    padding-right: 2rem;
+    vertical-align: top;
+}
+
+/* Exclusive Hover Logic */
+.hover-row { 
+    transition-property: background-color, border-color; 
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); 
+    transition-duration: 150ms; 
+}
+.hover-row:hover { background-color: var(--color-bg-primary-tint); }
+
+/* Accent bar on hover */
+.hover-row > td:first-child {
+    position: relative;
+}
+.hover-row > td:first-child::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background-color: var(--color-primary);
+    transform: scaleY(0);
+    transition: transform 0.2s ease-in-out;
+}
+.hover-row:hover > td:first-child::before {
+    transform: scaleY(1);
+}
+
+/* ネスト行ホバー時の親行強調表示抑制 */
+.hover-row:hover:has(.hover-row:hover) { background-color: transparent; }
+.hover-row:hover:has(.hover-row:hover) > td:first-child::before { transform: scaleY(0); }
+
+/* カラムリサイザーホバー時の行強調表示抑制 */
+.hover-row:hover:has(.col-resizer:hover) { background-color: transparent; }
+.hover-row:hover:has(.col-resizer:hover) > td:first-child::before { transform: scaleY(0); }
+
+/* アコーディオン開閉アニメーション設定 */
+.collapsible-wrapper {
+    display: grid;
+    grid-template-rows: 1fr;
+    opacity: 1;
+    visibility: visible;
+    transition: grid-template-rows 0.3s ease-in-out, opacity 0.3s cubic-bezier(0.95, 0.05, 0.795, 0.035), visibility 0.3s;
+}
+
+.collapsible-wrapper.is-collapsed {
+    grid-template-rows: 0fr;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.collapsible-inner {
+    overflow: hidden;
+    min-height: 0;
+}
+
+.rotate-icon {
+    transition: transform 0.3s ease-in-out;
+    transform: rotate(0deg);
+}
+
+.rotate-icon.is-collapsed {
+    transform: rotate(-90deg);
+}
+
+/* 画面外描画最適化 */
+.card-container {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 400px;
+}
+
+/* トランジション一時無効化設定 */
+body.disable-transitions *,
+body.disable-transitions *::before,
+body.disable-transitions *::after {
+    transition: none !important;
+}
+
+/* Card Collapsed State Styling */
+.card-container.is-collapsed .card-header {
+    border-bottom-color: transparent;
+    transition: border-color 0.3s ease-in-out;
+}
+.card-header {
+    transition: border-color 0.3s ease-in-out, background-color 0.15s ease-in-out;
+}
+
+@media print {
+    #sidebar, .sidebar-resizer, .col-resizer, .copy-cmd-btn, .tooltip-container, .mode-btn {
+        display: none !important;
+    }
+    main {
+        margin-left: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+    }
+    body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        background-color: white !important;
+    }
+    .table-container-standard {
+        border: none !important;
+        box-shadow: none !important;
+    }
+}
+
+/* コンパクト表示スタイリング */
+body.compact-mode main .p-8 { padding: 1rem !important; }
+body.compact-mode main .p-6 { padding: 0.75rem !important; }
+body.compact-mode main .p-4 { padding: 0.5rem !important; }
+body.compact-mode main .py-4 { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
+body.compact-mode main .py-2 { padding-top: 0.25rem !important; padding-bottom: 0.25rem !important; }
+body.compact-mode main .px-4 { padding-left: 0.5rem !important; padding-right: 0.5rem !important; }
+body.compact-mode main .px-6 { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+body.compact-mode main .gap-4 { gap: 0.5rem !important; }
+body.compact-mode main .gap-6 { gap: 0.75rem !important; }
+body.compact-mode main .gap-8 { gap: 1rem !important; }
+body.compact-mode main .mt-8 { margin-top: 1rem !important; }
+body.compact-mode main .mb-8 { margin-bottom: 1rem !important; }
+body.compact-mode main .my-8 { margin-top: 1rem !important; margin-bottom: 1rem !important; }
+body.compact-mode main .mt-4 { margin-top: 0.5rem !important; }
+body.compact-mode main .mb-4 { margin-bottom: 0.5rem !important; }
+body.compact-mode main .my-4 { margin-top: 0.5rem !important; margin-bottom: 0.5rem !important; }
+
+/* Table specific compacting */
+body.compact-mode main th, 
+body.compact-mode main td { 
+    padding: 0.25rem 0.5rem !important; 
+}
+body.compact-mode main .nested-table th, 
+body.compact-mode main .nested-table td { 
+    padding: 0.125rem 0.375rem !important; 
+}
+body.compact-mode main .nested-table {
+    margin-top: 0.125rem !important;
+    margin-bottom: 0.125rem !important;
+}
+
+/* Card container compacting */
+body.compact-mode main .card-header {
+    padding: 0.5rem !important;
+}
+body.compact-mode main .card-body {
+    padding: 0.5rem !important;
+}
+
+/* ==========================================================================
+   Copy Button Positioning
+   ========================================================================== 
+   The copy button is absolute-positioned inside the `td`. Since `td` height 
+   can grow based on its content (e.g., nested objects), using `top: 50%` 
+   would center the button relative to the entire row height. 
+   To keep the button aligned with the "key name" (which is on the first line),
+   we must explicitly set `top` to match the `padding-top` of the cell.
+*/
+
+/* Default Mode */
+main .copy-cmd-btn {
+    top: 0.75rem; /* Matches py-3 (0.75rem) */
+}
+main .nested-table .copy-cmd-btn {
+    top: 0.5rem; /* Matches nested table padding-top (0.5rem) */
+}
+
+/* Compact Mode */
+body.compact-mode main .copy-cmd-btn {
+    top: 0.25rem !important; /* Matches compact top-level padding-top */
+}
+body.compact-mode main .nested-table .copy-cmd-btn {
+    top: 0.125rem !important; /* Matches compact nested padding-top */
+}
+
+/* コピーボタンの基本スタイリング */
+.copy-cmd-btn {
+    position: absolute;
+    right: 0.5rem;
+    padding: 0.25rem;
+    color: #94a3b8;
+    border-radius: 0.25rem;
+    opacity: 0;
+    transition: opacity 0.2s, background-color 0.2s, color 0.2s;
+}
+
+.copy-cmd-btn:hover {
+    color: #2563eb;
+}
+
+/* コピーボタンのホバー時表示制御 */
+.hover-row.is-hovered > .property-key-cell > .copy-cmd-btn,
+.hover-row:hover > .property-key-cell > .copy-cmd-btn {
+    opacity: 1;
+}
+
+/* Hide copy button when resizer is hovered or resizing */
+body.resizer-hovered .copy-cmd-btn,
+body.is-resizing .copy-cmd-btn {
+    opacity: 0 !important;
+}
+
+
+    </style>
+</head><body class="bg-slate-50 min-h-screen flex text-slate-800">
+<script>
+        window.DocDockConstants = JSON.parse(decodeURIComponent('%7B%22PathSeparator%22%3A%22__%22%2C%22ReservedKeys%22%3A%7B%22Alias%22%3A%22_alias%22%2C%22Match%22%3A%22_match%22%2C%22Imports%22%3A%22_imports%22%2C%22Array%22%3A%22%5B%5D%22%2C%22ConditionPrefix%22%3A%22%3D%22%2C%22DescriptionLower%22%3A%22description%22%2C%22DescriptionUpper%22%3A%22Description%22%2C%22ExcludeValue%22%3A%22__value%22%7D%2C%22Defaults%22%3A%7B%22GuideDir%22%3A%22guides%22%2C%22AliasDir%22%3A%22aliases%22%2C%22ExcludeDir%22%3A%22excludes%22%2C%22Mode%22%3A%22generic%22%2C%22Language%22%3A%22ja%22%2C%22Title%22%3A%22YAML%20Documentation%22%2C%22IndexTitle%22%3A%22Documentation%20Index%22%2C%22UncategorizedGroup%22%3A%22Other%22%2C%22ConfigFile%22%3A%22setting.config.yml%22%2C%22TemplateLayout%22%3A%22..%2Ftemplates%2Flayout.ejs%22%2C%22TemplateIndex%22%3A%22..%2Ftemplates%2Findex.ejs%22%7D%2C%22StrategyModes%22%3A%7B%22Generic%22%3A%22generic%22%2C%22Cfn%22%3A%22cfn%22%7D%2C%22SkeletonTypes%22%3A%7B%22All%22%3A%22all%22%2C%22Alias%22%3A%22alias%22%2C%22Guide%22%3A%22guide%22%2C%22Exclude%22%3A%22exclude%22%7D%2C%22ConfigFiles%22%3A%7B%22Candidates%22%3A%5B%22setting.config.yml%22%2C%22setting.config.yaml%22%5D%7D%2C%22FileSuffixes%22%3A%7B%22GuideYaml%22%3A%22.guide.yaml%22%2C%22GuideYml%22%3A%22.guide.yml%22%2C%22AliasYaml%22%3A%22.alias.yaml%22%2C%22AliasYml%22%3A%22.alias.yml%22%2C%22ExcludeYaml%22%3A%22.exclude.yaml%22%2C%22ExcludeYml%22%3A%22.exclude.yml%22%7D%2C%22LocalStorageKeys%22%3A%7B%22DocMode%22%3A%22doc-mode%22%2C%22AliasMode%22%3A%22alias-mode%22%2C%22CompactMode%22%3A%22compact-mode%22%7D%2C%22Modes%22%3A%7B%22Inline%22%3A%22inline%22%2C%22Tooltip%22%3A%22tooltip%22%2C%22Show%22%3A%22show%22%2C%22Hide%22%3A%22hide%22%7D%2C%22CssClasses%22%3A%7B%22IsCollapsed%22%3A%22is-collapsed%22%2C%22ModeInline%22%3A%22mode-inline%22%2C%22ModeTooltip%22%3A%22mode-tooltip%22%2C%22HideDeepAliases%22%3A%22hide-deep-aliases%22%2C%22CompactMode%22%3A%22compact-mode%22%2C%22Pinned%22%3A%22pinned%22%2C%22IsHovered%22%3A%22is-hovered%22%2C%22Resizing%22%3A%22resizing%22%2C%22IsResizing%22%3A%22is-resizing%22%2C%22ResizerHovered%22%3A%22resizer-hovered%22%2C%22HoverActive%22%3A%22hover-active%22%2C%22PropertyValue%22%3A%22property-value%22%2C%22BadgeFn%22%3A%22badge-fn%22%2C%22TableBase%22%3A%22table-base%22%2C%22NestedTable%22%3A%22nested-table%22%2C%22HoverRow%22%3A%22hover-row%22%2C%22ElemInlineDescWrapper%22%3A%22elem-inline-desc-wrapper%22%2C%22ElemInlineDesc%22%3A%22elem-inline-desc%22%2C%22PropertyKeyCell%22%3A%22property-key-cell%22%2C%22CopyCmdBtn%22%3A%22copy-cmd-btn%22%2C%22ColResizer%22%3A%22col-resizer%22%2C%22GroupNavBtn%22%3A%22group-nav-btn%22%2C%22GroupSection%22%3A%22group-section%22%2C%22PageCard%22%3A%22page-card%22%7D%2C%22UIConstants%22%3A%7B%22Resizing%22%3A%7B%22MinColumnWidthPercent%22%3A10%2C%22MaxColumnWidthPercent%22%3A90%2C%22MinSidebarWidthPx%22%3A256%2C%22MaxSidebarWidthRatio%22%3A0.3%7D%2C%22Animation%22%3A%7B%22HighlightDurationMs%22%3A2000%2C%22TooltipDelayMs%22%3A100%2C%22CopyFeedbackDurationMs%22%3A1000%7D%7D%7D'));
+        (function() {
+            try {
+                const C = window.DocDockConstants;
+                const savedMode = localStorage.getItem(C.LocalStorageKeys.DocMode) || C.Modes.Inline;
+                document.body.classList.add('mode-' + savedMode);
+                const savedAliasMode = localStorage.getItem(C.LocalStorageKeys.AliasMode) || C.Modes.Show;
+                if (savedAliasMode === C.Modes.Hide) document.body.classList.add(C.CssClasses.HideDeepAliases);
+                const savedCompactMode = localStorage.getItem(C.LocalStorageKeys.CompactMode) || 'false';
+                if (savedCompactMode === 'true') document.body.classList.add(C.CssClasses.CompactMode);
+            } catch (e) {}
+        })();
+    </script>
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;"><symbol id="icon-copy" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></symbol> <symbol id="icon-info" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd"></path></symbol> <symbol id="icon-chevron-down" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></symbol></svg><!-- Sidebar --> <!-- Sidebar --><aside id="sidebar" class="h-screen sticky top-0 flex-shrink-0 z-40 bg-white border-r border-slate-200" style="width: var(--sidebar-width); min-width: 16rem;"><!-- Resizer is relative to aside, which is visible --><div id="sidebar-resizer" class="sidebar-resizer"></div><!-- Inner Scroll Container --><div class="flex flex-col h-full w-full overflow-hidden"><header class="p-6 border-b border-slate-100 flex-shrink-0"><h1 class="text-lg font-bold text-slate-700 leading-tight break-words">ルートテーブル</h1><div class="mt-6 flex gap-2 bg-slate-100 p-1 rounded-lg"><button onclick="YdockUI.DisplayMode.setMode('inline')" data-mode="inline" class="mode-btn flex-1 px-2 py-1.5 rounded-md text-xs font-medium transition-colors text-center">
+Inline
+</button><button onclick="YdockUI.DisplayMode.setMode('tooltip')" data-mode="tooltip" class="mode-btn flex-1 px-2 py-1.5 rounded-md text-xs font-medium transition-colors text-center">
+Tooltip
+</button></div><div class="mt-4 flex gap-2"><button onclick="YdockUI.Navigation.expandAll()" class="flex-1 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded transition-colors" title="Expand All"><svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg></button><button onclick="YdockUI.Navigation.collapseAll()" class="flex-1 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded transition-colors" title="Collapse All"><svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25"></path></svg></button></div><!-- Alias Toggle Switch --><div class="mt-4 flex items-center justify-between bg-slate-100 p-2 rounded-lg"><span class="text-xs font-medium text-slate-700">Show Alias</span> <label class="relative inline-flex items-center cursor-pointer"> <input type="checkbox" id="alias-toggle-checkbox" class="sr-only peer" checked onchange="YdockUI.DisplayMode.toggleAliasSwitch(this)"><div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div></label></div><!-- Compact View Toggle Switch --><div class="mt-2 flex items-center justify-between bg-slate-100 p-2 rounded-lg"><span class="text-xs font-medium text-slate-700">Compact View</span> <label class="relative inline-flex items-center cursor-pointer"> <input type="checkbox" id="compact-toggle-checkbox" class="sr-only peer" onchange="YdockUI.DisplayMode.toggleCompactSwitch(this)"><div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div></label></div></header><nav class="flex-1 p-4 overflow-y-auto"><h2 class="text-sm font-bold text-slate-600 tracking-wider mb-2 px-2 mt-4 pt-4 border-t border-slate-200 first:mt-0 first:pt-0 first:border-t-0">RouteTables</h2><ul class="space-y-1"><li class="flex items-center gap-1"><button
+data-item-id="RouteTables__0"
+data-section-index="0"
+data-card-index="0"
+onclick="YdockUI.Navigation.onSidebarItemClick(this)"
+class="flex-1 px-2 py-1.5 rounded-md text-sm text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition-colors truncate text-left"
+title="0">
+0
+</button></li><li class="flex items-center gap-1"><button
+data-item-id="RouteTables__1"
+data-section-index="0"
+data-card-index="1"
+onclick="YdockUI.Navigation.onSidebarItemClick(this)"
+class="flex-1 px-2 py-1.5 rounded-md text-sm text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition-colors truncate text-left"
+title="1">
+1
+</button></li><li class="flex items-center gap-1"><button
+data-item-id="RouteTables__2"
+data-section-index="0"
+data-card-index="2"
+onclick="YdockUI.Navigation.onSidebarItemClick(this)"
+class="flex-1 px-2 py-1.5 rounded-md text-sm text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition-colors truncate text-left"
+title="2">
+2
+</button></li></ul></nav><footer class="p-4 border-t border-slate-100 text-center text-slate-400 text-xs flex-shrink-0">
+Generated by ydock
+</footer></div></aside><!-- Main Content --> <!-- Main Content --><main class="flex-1 min-w-0 p-8"><div class="w-full max-w-none px-4"><h2 class="text-2xl font-bold text-slate-800 border-b border-slate-200 pb-2 cursor-pointer hover:text-blue-600 transition-colors flex items-center gap-2" onclick="YdockUI.Navigation.toggleSection('section-0-content', 'section-0-content-icon')"> <span id="section-0-content-icon" class="text-slate-400 flex-shrink-0 rotate-icon"><svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-chevron-down"></use></svg></span>
+RouteTables
+</h2><div id="section-0-content" class="collapsible-wrapper transition-all duration-300 ease-in-out"><div class="p-6 space-y-6 overflow-hidden min-h-0"><div id="RouteTables__0" class="card-container bg-white rounded-xl shadow-sm border border-slate-200 mb-8 scroll-mt-6 overflow-hidden "><div class="card-header bg-slate-100 px-6 py-4 border-b border-slate-200 flex justify-between items-center cursor-pointer hover:bg-slate-200"
+onclick="YdockUI.Navigation.toggleSection('card-0-0-content', 'card-0-0-content-icon')"><h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"> <span id="card-0-0-content-icon" class="text-slate-400 flex-shrink-0 rotate-icon "><svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-chevron-down"></use></svg></span> <span>0</span> </h2></div><div id="card-0-0-content" class="collapsible-wrapper transition-all duration-300 ease-in-out "><div class="collapsible-inner"><div class="p-6"><!-- Table 2: Properties (Main) --><div class="table-container-standard"><table class="w-full text-left border-collapse table-fixed top-level-table text-sm"><colgroup><col style="width: var(--col-width-level-0);"><col></colgroup><thead><tr class="text-xs uppercase tracking-wider text-slate-600 bg-slate-200"><th class="py-3 px-4 relative">
+Property
+<div class="col-resizer" data-level="0"></div></th><th class="py-3 px-4">Value</th></tr></thead><tbody><tr id="RouteTables__0__RouteTableId" class="hover-row scroll-mt-20"><td class="property-key-cell py-3 px-4"><span class="break-all">
+RouteTableId
+</span><button data-copy-path="RouteTables[].RouteTableId" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="py-3 px-4 font-mono text-slate-700 align-top"><div class="flex items-start gap-2"><div class="value-cell-wrapper"><span class="property-value">rtb-0123456789abcdef0</span></div></div></td></tr><tr id="RouteTables__0__VpcId" class="hover-row scroll-mt-20"><td class="property-key-cell py-3 px-4"><span class="break-all">
+VpcId
+</span><button data-copy-path="RouteTables[].VpcId" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="py-3 px-4 font-mono text-slate-700 align-top"><div class="flex items-start gap-2"><div class="value-cell-wrapper"><span class="property-value">vpc-0123456789abcdef0</span></div></div></td></tr><tr id="RouteTables__0__OwnerId" class="hover-row scroll-mt-20"><td class="property-key-cell py-3 px-4"><span class="break-all">
+OwnerId
+</span><button data-copy-path="RouteTables[].OwnerId" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="py-3 px-4 font-mono text-slate-700 align-top"><div class="flex items-start gap-2"><div class="value-cell-wrapper"><span class="property-value">111122223333</span></div></div></td></tr><tr id="RouteTables__0__Associations" class="hover-row scroll-mt-20"><td class="property-key-cell py-3 px-4"><span class="break-all">
+Associations
+</span><button data-copy-path="RouteTables[].Associations" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="py-3 px-4 font-mono text-slate-700 align-top"><div class="flex items-start gap-2"><div class="value-cell-wrapper"><div class="flex flex-col gap-4 mt-2"><div id="RouteTables__0__Associations__0" class="border border-slate-200 rounded-md overflow-hidden scroll-mt-20"><div class="bg-slate-50 px-3 py-1 text-xs font-bold text-slate-500 border-b border-slate-200 flex items-center justify-between"><span class="break-all"># 0</span></div><div class="p-2 bg-white"><table class="table-base nested-table text-sm bg-white"><colgroup><col style="width: var(--col-width-level-1, var(--col-width-level-default));"><col></colgroup><thead><tr><th class="relative">
+Property
+<div class="col-resizer" data-level="1"></div></th><th>Value</th></tr></thead><tbody><tr id="RouteTables__0__Associations__0__RouteTableAssociationId" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">RouteTableAssociationId</span><button data-copy-path="RouteTables[].Associations[].RouteTableAssociationId" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">rtbassoc-0111111111111111a</span></div></div></td></tr><tr id="RouteTables__0__Associations__0__RouteTableId" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">RouteTableId</span><button data-copy-path="RouteTables[].Associations[].RouteTableId" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">rtb-0123456789abcdef0</span></div></div></td></tr><tr id="RouteTables__0__Associations__0__SubnetId" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">SubnetId</span><button data-copy-path="RouteTables[].Associations[].SubnetId" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">subnet-0111111111111111a</span></div></div></td></tr><tr id="RouteTables__0__Associations__0__Main" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">Main</span><button data-copy-path="RouteTables[].Associations[].Main" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">false</span></div></div></td></tr><tr id="RouteTables__0__Associations__0__AssociationState" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">AssociationState</span><button data-copy-path="RouteTables[].Associations[].AssociationState" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><table class="table-base nested-table text-sm bg-white"><colgroup><col style="width: var(--col-width-level-2, var(--col-width-level-default));"><col></colgroup><thead><tr><th class="relative">
+Property
+<div class="col-resizer" data-level="2"></div></th><th>Value</th></tr></thead><tbody><tr id="RouteTables__0__Associations__0__AssociationState__State" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">State</span><button data-copy-path="RouteTables[].Associations[].AssociationState.State" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">associated</span></div></div></td></tr></tbody></table></div></div></td></tr></tbody></table></div></div><div id="RouteTables__0__Associations__1" class="border border-slate-200 rounded-md overflow-hidden scroll-mt-20"><div class="bg-slate-50 px-3 py-1 text-xs font-bold text-slate-500 border-b border-slate-200 flex items-center justify-between"><span class="break-all"># 1</span></div><div class="p-2 bg-white"><table class="table-base nested-table text-sm bg-white"><colgroup><col style="width: var(--col-width-level-1, var(--col-width-level-default));"><col></colgroup><thead><tr><th class="relative">
+Property
+<div class="col-resizer" data-level="1"></div></th><th>Value</th></tr></thead><tbody><tr id="RouteTables__0__Associations__1__RouteTableAssociationId" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">RouteTableAssociationId</span><button data-copy-path="RouteTables[].Associations[].RouteTableAssociationId" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">rtbassoc-0111111111111111c</span></div></div></td></tr><tr id="RouteTables__0__Associations__1__RouteTableId" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">RouteTableId</span><button data-copy-path="RouteTables[].Associations[].RouteTableId" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">rtb-0123456789abcdef0</span></div></div></td></tr><tr id="RouteTables__0__Associations__1__SubnetId" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">SubnetId</span><button data-copy-path="RouteTables[].Associations[].SubnetId" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">subnet-0111111111111111c</span></div></div></td></tr><tr id="RouteTables__0__Associations__1__Main" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">Main</span><button data-copy-path="RouteTables[].Associations[].Main" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">false</span></div></div></td></tr><tr id="RouteTables__0__Associations__1__AssociationState" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">AssociationState</span><button data-copy-path="RouteTables[].Associations[].AssociationState" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><table class="table-base nested-table text-sm bg-white"><colgroup><col style="width: var(--col-width-level-2, var(--col-width-level-default));"><col></colgroup><thead><tr><th class="relative">
+Property
+<div class="col-resizer" data-level="2"></div></th><th>Value</th></tr></thead><tbody><tr id="RouteTables__0__Associations__1__AssociationState__State" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">State</span><button data-copy-path="RouteTables[].Associations[].AssociationState.State" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">associated</span></div></div></td></tr></tbody></table></div></div></td></tr></tbody></table></div></div></div></div></div></td></tr><tr id="RouteTables__0__Routes" class="hover-row scroll-mt-20"><td class="property-key-cell py-3 px-4"><span class="break-all">
+Routes
+</span><button data-copy-path="RouteTables[].Routes" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="py-3 px-4 font-mono text-slate-700 align-top"><div class="flex items-start gap-2"><div class="value-cell-wrapper"><div class="flex flex-col gap-4 mt-2"><div id="RouteTables__0__Routes__0" class="border border-slate-200 rounded-md overflow-hidden scroll-mt-20"><div class="bg-slate-50 px-3 py-1 text-xs font-bold text-slate-500 border-b border-slate-200 flex items-center justify-between"><span class="break-all"># 0</span></div><div class="p-2 bg-white"><table class="table-base nested-table text-sm bg-white"><colgroup><col style="width: var(--col-width-level-1, var(--col-width-level-default));"><col></colgroup><thead><tr><th class="relative">
+Property
+<div class="col-resizer" data-level="1"></div></th><th>Value</th></tr></thead><tbody><tr id="RouteTables__0__Routes__0__DestinationCidrBlock" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">DestinationCidrBlock</span><button data-copy-path="RouteTables[].Routes[].DestinationCidrBlock" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">10.0.0.0/16</span></div></div></td></tr><tr id="RouteTables__0__Routes__0__GatewayId" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">GatewayId</span><button data-copy-path="RouteTables[].Routes[].GatewayId" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">local</span></div></div></td></tr><tr id="RouteTables__0__Routes__0__Origin" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">Origin</span><button data-copy-path="RouteTables[].Routes[].Origin" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">CreateRouteTable</span></div></div></td></tr><tr id="RouteTables__0__Routes__0__State" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">State</span><button data-copy-path="RouteTables[].Routes[].State" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">active</span></div></div></td></tr></tbody></table></div></div><div id="RouteTables__0__Routes__1" class="border border-slate-200 rounded-md overflow-hidden scroll-mt-20"><div class="bg-slate-50 px-3 py-1 text-xs font-bold text-slate-500 border-b border-slate-200 flex items-center justify-between"><span class="break-all"># 1</span></div><div class="p-2 bg-white"><table class="table-base nested-table text-sm bg-white"><colgroup><col style="width: var(--col-width-level-1, var(--col-width-level-default));"><col></colgroup><thead><tr><th class="relative">
+Property
+<div class="col-resizer" data-level="1"></div></th><th>Value</th></tr></thead><tbody><tr id="RouteTables__0__Routes__1__DestinationCidrBlock" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">DestinationCidrBlock</span><button data-copy-path="RouteTables[].Routes[].DestinationCidrBlock" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">0.0.0.0/0</span></div></div></td></tr><tr id="RouteTables__0__Routes__1__GatewayId" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">GatewayId</span><button data-copy-path="RouteTables[].Routes[].GatewayId" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">igw-0123456789abcdef0</span></div></div></td></tr><tr id="RouteTables__0__Routes__1__Origin" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">Origin</span><button data-copy-path="RouteTables[].Routes[].Origin" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">CreateRoute</span></div></div></td></tr><tr id="RouteTables__0__Routes__1__State" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">State</span><button data-copy-path="RouteTables[].Routes[].State" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">active</span></div></div></td></tr></tbody></table></div></div></div></div></div></td></tr><tr id="RouteTables__0__PropagatingVgws" class="hover-row scroll-mt-20"><td class="property-key-cell py-3 px-4"><span class="break-all">
+PropagatingVgws
+</span><button data-copy-path="RouteTables[].PropagatingVgws" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="py-3 px-4 font-mono text-slate-700 align-top"><div class="flex items-start gap-2"><div class="value-cell-wrapper"></div></div></td></tr><tr id="RouteTables__0__Tags" class="hover-row scroll-mt-20"><td class="property-key-cell py-3 px-4"><span class="break-all">
+Tags
+</span><button data-copy-path="RouteTables[].Tags" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="py-3 px-4 font-mono text-slate-700 align-top"><div class="flex items-start gap-2"><div class="value-cell-wrapper"><div class="flex flex-col gap-4 mt-2"><div id="RouteTables__0__Tags__0" class="border border-slate-200 rounded-md overflow-hidden scroll-mt-20"><div class="bg-slate-50 px-3 py-1 text-xs font-bold text-slate-500 border-b border-slate-200 flex items-center justify-between"><span class="break-all"># 0</span></div><div class="p-2 bg-white"><table class="table-base nested-table text-sm bg-white"><colgroup><col style="width: var(--col-width-level-1, var(--col-width-level-default));"><col></colgroup><thead><tr><th class="relative">
+Property
+<div class="col-resizer" data-level="1"></div></th><th>Value</th></tr></thead><tbody><tr id="RouteTables__0__Tags__0__Key" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">Key</span><button data-copy-path="RouteTables[].Tags[].Key" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">Name</span></div></div></td></tr><tr id="RouteTables__0__Tags__0__Value" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">Value</span><button data-copy-path="RouteTables[].Tags[].Value" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">prd-public-rt</span></div></div></td></tr></tbody></table></div></div><div id="RouteTables__0__Tags__1" class="border border-slate-200 rounded-md overflow-hidden scroll-mt-20"><div class="bg-slate-50 px-3 py-1 text-xs font-bold text-slate-500 border-b border-slate-200 flex items-center justify-between"><span class="break-all"># 1</span></div><div class="p-2 bg-white"><table class="table-base nested-table text-sm bg-white"><colgroup><col style="width: var(--col-width-level-1, var(--col-width-level-default));"><col></colgroup><thead><tr><th class="relative">
+Property
+<div class="col-resizer" data-level="1"></div></th><th>Value</th></tr></thead><tbody><tr id="RouteTables__0__Tags__1__Key" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">Key</span><button data-copy-path="RouteTables[].Tags[].Key" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">Environment</span></div></div></td></tr><tr id="RouteTables__0__Tags__1__Value" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">Value</span><button data-copy-path="RouteTables[].Tags[].Value" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">production</span></div></div></td></tr></tbody></table></div></div><div id="RouteTables__0__Tags__2" class="border border-slate-200 rounded-md overflow-hidden scroll-mt-20"><div class="bg-slate-50 px-3 py-1 text-xs font-bold text-slate-500 border-b border-slate-200 flex items-center justify-between"><span class="break-all"># 2</span></div><div class="p-2 bg-white"><table class="table-base nested-table text-sm bg-white"><colgroup><col style="width: var(--col-width-level-1, var(--col-width-level-default));"><col></colgroup><thead><tr><th class="relative">
+Property
+<div class="col-resizer" data-level="1"></div></th><th>Value</th></tr></thead><tbody><tr id="RouteTables__0__Tags__2__Key" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">Key</span><button data-copy-path="RouteTables[].Tags[].Key" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">Tier</span></div></div></td></tr><tr id="RouteTables__0__Tags__2__Value" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">Value</span><button data-copy-path="RouteTables[].Tags[].Value" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">public</span></div></div></td></tr></tbody></table></div></div></div></div></div></td></tr></tbody></table></div></div></div></div></div><div id="RouteTables__1" class="card-container bg-white rounded-xl shadow-sm border border-slate-200 mb-8 scroll-mt-6 overflow-hidden "><div class="card-header bg-slate-100 px-6 py-4 border-b border-slate-200 flex justify-between items-center cursor-pointer hover:bg-slate-200"
+onclick="YdockUI.Navigation.toggleSection('card-0-1-content', 'card-0-1-content-icon')"><h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"> <span id="card-0-1-content-icon" class="text-slate-400 flex-shrink-0 rotate-icon "><svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-chevron-down"></use></svg></span> <span>1</span> </h2></div><div id="card-0-1-content" class="collapsible-wrapper transition-all duration-300 ease-in-out "><div class="collapsible-inner"><div class="p-6"><!-- Table 2: Properties (Main) --><div class="table-container-standard"><table class="w-full text-left border-collapse table-fixed top-level-table text-sm"><colgroup><col style="width: var(--col-width-level-0);"><col></colgroup><thead><tr class="text-xs uppercase tracking-wider text-slate-600 bg-slate-200"><th class="py-3 px-4 relative">
+Property
+<div class="col-resizer" data-level="0"></div></th><th class="py-3 px-4">Value</th></tr></thead><tbody><tr id="RouteTables__1__RouteTableId" class="hover-row scroll-mt-20"><td class="property-key-cell py-3 px-4"><span class="break-all">
+RouteTableId
+</span><button data-copy-path="RouteTables[].RouteTableId" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="py-3 px-4 font-mono text-slate-700 align-top"><div class="flex items-start gap-2"><div class="value-cell-wrapper"><span class="property-value">rtb-0123456789abcdef1</span></div></div></td></tr><tr id="RouteTables__1__VpcId" class="hover-row scroll-mt-20"><td class="property-key-cell py-3 px-4"><span class="break-all">
+VpcId
+</span><button data-copy-path="RouteTables[].VpcId" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="py-3 px-4 font-mono text-slate-700 align-top"><div class="flex items-start gap-2"><div class="value-cell-wrapper"><span class="property-value">vpc-0123456789abcdef0</span></div></div></td></tr><tr id="RouteTables__1__OwnerId" class="hover-row scroll-mt-20"><td class="property-key-cell py-3 px-4"><span class="break-all">
+OwnerId
+</span><button data-copy-path="RouteTables[].OwnerId" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="py-3 px-4 font-mono text-slate-700 align-top"><div class="flex items-start gap-2"><div class="value-cell-wrapper"><span class="property-value">111122223333</span></div></div></td></tr><tr id="RouteTables__1__Associations" class="hover-row scroll-mt-20"><td class="property-key-cell py-3 px-4"><span class="break-all">
+Associations
+</span><button data-copy-path="RouteTables[].Associations" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="py-3 px-4 font-mono text-slate-700 align-top"><div class="flex items-start gap-2"><div class="value-cell-wrapper"><div class="flex flex-col gap-4 mt-2"><div id="RouteTables__1__Associations__0" class="border border-slate-200 rounded-md overflow-hidden scroll-mt-20"><div class="bg-slate-50 px-3 py-1 text-xs font-bold text-slate-500 border-b border-slate-200 flex items-center justify-between"><span class="break-all"># 0</span></div><div class="p-2 bg-white"><table class="table-base nested-table text-sm bg-white"><colgroup><col style="width: var(--col-width-level-1, var(--col-width-level-default));"><col></colgroup><thead><tr><th class="relative">
+Property
+<div class="col-resizer" data-level="1"></div></th><th>Value</th></tr></thead><tbody><tr id="RouteTables__1__Associations__0__RouteTableAssociationId" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">RouteTableAssociationId</span><button data-copy-path="RouteTables[].Associations[].RouteTableAssociationId" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">rtbassoc-0222222222222222a</span></div></div></td></tr><tr id="RouteTables__1__Associations__0__RouteTableId" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">RouteTableId</span><button data-copy-path="RouteTables[].Associations[].RouteTableId" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">rtb-0123456789abcdef1</span></div></div></td></tr><tr id="RouteTables__1__Associations__0__SubnetId" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">SubnetId</span><button data-copy-path="RouteTables[].Associations[].SubnetId" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">subnet-0222222222222222a</span></div></div></td></tr><tr id="RouteTables__1__Associations__0__Main" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">Main</span><button data-copy-path="RouteTables[].Associations[].Main" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">false</span></div></div></td></tr><tr id="RouteTables__1__Associations__0__AssociationState" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">AssociationState</span><button data-copy-path="RouteTables[].Associations[].AssociationState" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><table class="table-base nested-table text-sm bg-white"><colgroup><col style="width: var(--col-width-level-2, var(--col-width-level-default));"><col></colgroup><thead><tr><th class="relative">
+Property
+<div class="col-resizer" data-level="2"></div></th><th>Value</th></tr></thead><tbody><tr id="RouteTables__1__Associations__0__AssociationState__State" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">State</span><button data-copy-path="RouteTables[].Associations[].AssociationState.State" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">associated</span></div></div></td></tr></tbody></table></div></div></td></tr></tbody></table></div></div></div></div></div></td></tr><tr id="RouteTables__1__Routes" class="hover-row scroll-mt-20"><td class="property-key-cell py-3 px-4"><span class="break-all">
+Routes
+</span><button data-copy-path="RouteTables[].Routes" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="py-3 px-4 font-mono text-slate-700 align-top"><div class="flex items-start gap-2"><div class="value-cell-wrapper"><div class="flex flex-col gap-4 mt-2"><div id="RouteTables__1__Routes__0" class="border border-slate-200 rounded-md overflow-hidden scroll-mt-20"><div class="bg-slate-50 px-3 py-1 text-xs font-bold text-slate-500 border-b border-slate-200 flex items-center justify-between"><span class="break-all"># 0</span></div><div class="p-2 bg-white"><table class="table-base nested-table text-sm bg-white"><colgroup><col style="width: var(--col-width-level-1, var(--col-width-level-default));"><col></colgroup><thead><tr><th class="relative">
+Property
+<div class="col-resizer" data-level="1"></div></th><th>Value</th></tr></thead><tbody><tr id="RouteTables__1__Routes__0__DestinationCidrBlock" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">DestinationCidrBlock</span><button data-copy-path="RouteTables[].Routes[].DestinationCidrBlock" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">10.0.0.0/16</span></div></div></td></tr><tr id="RouteTables__1__Routes__0__GatewayId" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">GatewayId</span><button data-copy-path="RouteTables[].Routes[].GatewayId" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">local</span></div></div></td></tr><tr id="RouteTables__1__Routes__0__Origin" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">Origin</span><button data-copy-path="RouteTables[].Routes[].Origin" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">CreateRouteTable</span></div></div></td></tr><tr id="RouteTables__1__Routes__0__State" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">State</span><button data-copy-path="RouteTables[].Routes[].State" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">active</span></div></div></td></tr></tbody></table></div></div><div id="RouteTables__1__Routes__1" class="border border-slate-200 rounded-md overflow-hidden scroll-mt-20"><div class="bg-slate-50 px-3 py-1 text-xs font-bold text-slate-500 border-b border-slate-200 flex items-center justify-between"><span class="break-all"># 1</span></div><div class="p-2 bg-white"><table class="table-base nested-table text-sm bg-white"><colgroup><col style="width: var(--col-width-level-1, var(--col-width-level-default));"><col></colgroup><thead><tr><th class="relative">
+Property
+<div class="col-resizer" data-level="1"></div></th><th>Value</th></tr></thead><tbody><tr id="RouteTables__1__Routes__1__DestinationCidrBlock" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">DestinationCidrBlock</span><button data-copy-path="RouteTables[].Routes[].DestinationCidrBlock" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">0.0.0.0/0</span></div></div></td></tr><tr id="RouteTables__1__Routes__1__NatGatewayId" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">NatGatewayId</span><button data-copy-path="RouteTables[].Routes[].NatGatewayId" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">nat-0123456789abcdef0</span></div></div></td></tr><tr id="RouteTables__1__Routes__1__Origin" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">Origin</span><button data-copy-path="RouteTables[].Routes[].Origin" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">CreateRoute</span></div></div></td></tr><tr id="RouteTables__1__Routes__1__State" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">State</span><button data-copy-path="RouteTables[].Routes[].State" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">active</span></div></div></td></tr></tbody></table></div></div></div></div></div></td></tr><tr id="RouteTables__1__PropagatingVgws" class="hover-row scroll-mt-20"><td class="property-key-cell py-3 px-4"><span class="break-all">
+PropagatingVgws
+</span><button data-copy-path="RouteTables[].PropagatingVgws" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="py-3 px-4 font-mono text-slate-700 align-top"><div class="flex items-start gap-2"><div class="value-cell-wrapper"></div></div></td></tr><tr id="RouteTables__1__Tags" class="hover-row scroll-mt-20"><td class="property-key-cell py-3 px-4"><span class="break-all">
+Tags
+</span><button data-copy-path="RouteTables[].Tags" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="py-3 px-4 font-mono text-slate-700 align-top"><div class="flex items-start gap-2"><div class="value-cell-wrapper"><div class="flex flex-col gap-4 mt-2"><div id="RouteTables__1__Tags__0" class="border border-slate-200 rounded-md overflow-hidden scroll-mt-20"><div class="bg-slate-50 px-3 py-1 text-xs font-bold text-slate-500 border-b border-slate-200 flex items-center justify-between"><span class="break-all"># 0</span></div><div class="p-2 bg-white"><table class="table-base nested-table text-sm bg-white"><colgroup><col style="width: var(--col-width-level-1, var(--col-width-level-default));"><col></colgroup><thead><tr><th class="relative">
+Property
+<div class="col-resizer" data-level="1"></div></th><th>Value</th></tr></thead><tbody><tr id="RouteTables__1__Tags__0__Key" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">Key</span><button data-copy-path="RouteTables[].Tags[].Key" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">Name</span></div></div></td></tr><tr id="RouteTables__1__Tags__0__Value" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">Value</span><button data-copy-path="RouteTables[].Tags[].Value" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">prd-private-rt-1a</span></div></div></td></tr></tbody></table></div></div><div id="RouteTables__1__Tags__1" class="border border-slate-200 rounded-md overflow-hidden scroll-mt-20"><div class="bg-slate-50 px-3 py-1 text-xs font-bold text-slate-500 border-b border-slate-200 flex items-center justify-between"><span class="break-all"># 1</span></div><div class="p-2 bg-white"><table class="table-base nested-table text-sm bg-white"><colgroup><col style="width: var(--col-width-level-1, var(--col-width-level-default));"><col></colgroup><thead><tr><th class="relative">
+Property
+<div class="col-resizer" data-level="1"></div></th><th>Value</th></tr></thead><tbody><tr id="RouteTables__1__Tags__1__Key" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">Key</span><button data-copy-path="RouteTables[].Tags[].Key" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">Environment</span></div></div></td></tr><tr id="RouteTables__1__Tags__1__Value" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">Value</span><button data-copy-path="RouteTables[].Tags[].Value" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">production</span></div></div></td></tr></tbody></table></div></div><div id="RouteTables__1__Tags__2" class="border border-slate-200 rounded-md overflow-hidden scroll-mt-20"><div class="bg-slate-50 px-3 py-1 text-xs font-bold text-slate-500 border-b border-slate-200 flex items-center justify-between"><span class="break-all"># 2</span></div><div class="p-2 bg-white"><table class="table-base nested-table text-sm bg-white"><colgroup><col style="width: var(--col-width-level-1, var(--col-width-level-default));"><col></colgroup><thead><tr><th class="relative">
+Property
+<div class="col-resizer" data-level="1"></div></th><th>Value</th></tr></thead><tbody><tr id="RouteTables__1__Tags__2__Key" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">Key</span><button data-copy-path="RouteTables[].Tags[].Key" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">Tier</span></div></div></td></tr><tr id="RouteTables__1__Tags__2__Value" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">Value</span><button data-copy-path="RouteTables[].Tags[].Value" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">private</span></div></div></td></tr></tbody></table></div></div></div></div></div></td></tr></tbody></table></div></div></div></div></div><div id="RouteTables__2" class="card-container bg-white rounded-xl shadow-sm border border-slate-200 mb-8 scroll-mt-6 overflow-hidden "><div class="card-header bg-slate-100 px-6 py-4 border-b border-slate-200 flex justify-between items-center cursor-pointer hover:bg-slate-200"
+onclick="YdockUI.Navigation.toggleSection('card-0-2-content', 'card-0-2-content-icon')"><h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"> <span id="card-0-2-content-icon" class="text-slate-400 flex-shrink-0 rotate-icon "><svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-chevron-down"></use></svg></span> <span>2</span> </h2></div><div id="card-0-2-content" class="collapsible-wrapper transition-all duration-300 ease-in-out "><div class="collapsible-inner"><div class="p-6"><!-- Table 2: Properties (Main) --><div class="table-container-standard"><table class="w-full text-left border-collapse table-fixed top-level-table text-sm"><colgroup><col style="width: var(--col-width-level-0);"><col></colgroup><thead><tr class="text-xs uppercase tracking-wider text-slate-600 bg-slate-200"><th class="py-3 px-4 relative">
+Property
+<div class="col-resizer" data-level="0"></div></th><th class="py-3 px-4">Value</th></tr></thead><tbody><tr id="RouteTables__2__RouteTableId" class="hover-row scroll-mt-20"><td class="property-key-cell py-3 px-4"><span class="break-all">
+RouteTableId
+</span><button data-copy-path="RouteTables[].RouteTableId" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="py-3 px-4 font-mono text-slate-700 align-top"><div class="flex items-start gap-2"><div class="value-cell-wrapper"><span class="property-value">rtb-0fedcba9876543210</span></div></div></td></tr><tr id="RouteTables__2__VpcId" class="hover-row scroll-mt-20"><td class="property-key-cell py-3 px-4"><span class="break-all">
+VpcId
+</span><button data-copy-path="RouteTables[].VpcId" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="py-3 px-4 font-mono text-slate-700 align-top"><div class="flex items-start gap-2"><div class="value-cell-wrapper"><span class="property-value">vpc-0fedcba9876543210</span></div></div></td></tr><tr id="RouteTables__2__OwnerId" class="hover-row scroll-mt-20"><td class="property-key-cell py-3 px-4"><span class="break-all">
+OwnerId
+</span><button data-copy-path="RouteTables[].OwnerId" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="py-3 px-4 font-mono text-slate-700 align-top"><div class="flex items-start gap-2"><div class="value-cell-wrapper"><span class="property-value">111122223333</span></div></div></td></tr><tr id="RouteTables__2__Associations" class="hover-row scroll-mt-20"><td class="property-key-cell py-3 px-4"><span class="break-all">
+Associations
+</span><button data-copy-path="RouteTables[].Associations" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="py-3 px-4 font-mono text-slate-700 align-top"><div class="flex items-start gap-2"><div class="value-cell-wrapper"><div class="flex flex-col gap-4 mt-2"><div id="RouteTables__2__Associations__0" class="border border-slate-200 rounded-md overflow-hidden scroll-mt-20"><div class="bg-slate-50 px-3 py-1 text-xs font-bold text-slate-500 border-b border-slate-200 flex items-center justify-between"><span class="break-all"># 0</span></div><div class="p-2 bg-white"><table class="table-base nested-table text-sm bg-white"><colgroup><col style="width: var(--col-width-level-1, var(--col-width-level-default));"><col></colgroup><thead><tr><th class="relative">
+Property
+<div class="col-resizer" data-level="1"></div></th><th>Value</th></tr></thead><tbody><tr id="RouteTables__2__Associations__0__RouteTableAssociationId" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">RouteTableAssociationId</span><button data-copy-path="RouteTables[].Associations[].RouteTableAssociationId" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">rtbassoc-0fedcba9876543210</span></div></div></td></tr><tr id="RouteTables__2__Associations__0__RouteTableId" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">RouteTableId</span><button data-copy-path="RouteTables[].Associations[].RouteTableId" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">rtb-0fedcba9876543210</span></div></div></td></tr><tr id="RouteTables__2__Associations__0__Main" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">Main</span><button data-copy-path="RouteTables[].Associations[].Main" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">true</span></div></div></td></tr><tr id="RouteTables__2__Associations__0__AssociationState" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">AssociationState</span><button data-copy-path="RouteTables[].Associations[].AssociationState" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><table class="table-base nested-table text-sm bg-white"><colgroup><col style="width: var(--col-width-level-2, var(--col-width-level-default));"><col></colgroup><thead><tr><th class="relative">
+Property
+<div class="col-resizer" data-level="2"></div></th><th>Value</th></tr></thead><tbody><tr id="RouteTables__2__Associations__0__AssociationState__State" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">State</span><button data-copy-path="RouteTables[].Associations[].AssociationState.State" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">associated</span></div></div></td></tr></tbody></table></div></div></td></tr></tbody></table></div></div></div></div></div></td></tr><tr id="RouteTables__2__Routes" class="hover-row scroll-mt-20"><td class="property-key-cell py-3 px-4"><span class="break-all">
+Routes
+</span><button data-copy-path="RouteTables[].Routes" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="py-3 px-4 font-mono text-slate-700 align-top"><div class="flex items-start gap-2"><div class="value-cell-wrapper"><div class="flex flex-col gap-4 mt-2"><div id="RouteTables__2__Routes__0" class="border border-slate-200 rounded-md overflow-hidden scroll-mt-20"><div class="bg-slate-50 px-3 py-1 text-xs font-bold text-slate-500 border-b border-slate-200 flex items-center justify-between"><span class="break-all"># 0</span></div><div class="p-2 bg-white"><table class="table-base nested-table text-sm bg-white"><colgroup><col style="width: var(--col-width-level-1, var(--col-width-level-default));"><col></colgroup><thead><tr><th class="relative">
+Property
+<div class="col-resizer" data-level="1"></div></th><th>Value</th></tr></thead><tbody><tr id="RouteTables__2__Routes__0__DestinationCidrBlock" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">DestinationCidrBlock</span><button data-copy-path="RouteTables[].Routes[].DestinationCidrBlock" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">172.16.0.0/16</span></div></div></td></tr><tr id="RouteTables__2__Routes__0__GatewayId" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">GatewayId</span><button data-copy-path="RouteTables[].Routes[].GatewayId" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">local</span></div></div></td></tr><tr id="RouteTables__2__Routes__0__Origin" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">Origin</span><button data-copy-path="RouteTables[].Routes[].Origin" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">CreateRouteTable</span></div></div></td></tr><tr id="RouteTables__2__Routes__0__State" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">State</span><button data-copy-path="RouteTables[].Routes[].State" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">active</span></div></div></td></tr></tbody></table></div></div></div></div></div></td></tr><tr id="RouteTables__2__PropagatingVgws" class="hover-row scroll-mt-20"><td class="property-key-cell py-3 px-4"><span class="break-all">
+PropagatingVgws
+</span><button data-copy-path="RouteTables[].PropagatingVgws" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="py-3 px-4 font-mono text-slate-700 align-top"><div class="flex items-start gap-2"><div class="value-cell-wrapper"></div></div></td></tr><tr id="RouteTables__2__Tags" class="hover-row scroll-mt-20"><td class="property-key-cell py-3 px-4"><span class="break-all">
+Tags
+</span><button data-copy-path="RouteTables[].Tags" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="py-3 px-4 font-mono text-slate-700 align-top"><div class="flex items-start gap-2"><div class="value-cell-wrapper"><div class="flex flex-col gap-4 mt-2"><div id="RouteTables__2__Tags__0" class="border border-slate-200 rounded-md overflow-hidden scroll-mt-20"><div class="bg-slate-50 px-3 py-1 text-xs font-bold text-slate-500 border-b border-slate-200 flex items-center justify-between"><span class="break-all"># 0</span></div><div class="p-2 bg-white"><table class="table-base nested-table text-sm bg-white"><colgroup><col style="width: var(--col-width-level-1, var(--col-width-level-default));"><col></colgroup><thead><tr><th class="relative">
+Property
+<div class="col-resizer" data-level="1"></div></th><th>Value</th></tr></thead><tbody><tr id="RouteTables__2__Tags__0__Key" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">Key</span><button data-copy-path="RouteTables[].Tags[].Key" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">Name</span></div></div></td></tr><tr id="RouteTables__2__Tags__0__Value" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">Value</span><button data-copy-path="RouteTables[].Tags[].Value" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">stg-default-rt</span></div></div></td></tr></tbody></table></div></div><div id="RouteTables__2__Tags__1" class="border border-slate-200 rounded-md overflow-hidden scroll-mt-20"><div class="bg-slate-50 px-3 py-1 text-xs font-bold text-slate-500 border-b border-slate-200 flex items-center justify-between"><span class="break-all"># 1</span></div><div class="p-2 bg-white"><table class="table-base nested-table text-sm bg-white"><colgroup><col style="width: var(--col-width-level-1, var(--col-width-level-default));"><col></colgroup><thead><tr><th class="relative">
+Property
+<div class="col-resizer" data-level="1"></div></th><th>Value</th></tr></thead><tbody><tr id="RouteTables__2__Tags__1__Key" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">Key</span><button data-copy-path="RouteTables[].Tags[].Key" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">Environment</span></div></div></td></tr><tr id="RouteTables__2__Tags__1__Value" class="hover-row scroll-mt-20"><td class="property-key-cell"><span class="break-all">Value</span><button data-copy-path="RouteTables[].Tags[].Value" class="copy-cmd-btn" title="Copy Key"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-copy"></use></svg></button></td><td class="align-top"><div class="flex items-start h-full"><div class="flex-grow w-full min-w-0"><span class="property-value">staging</span></div></div></td></tr></tbody></table></div></div></div></div></div></td></tr></tbody></table></div></div></div></div></div></div></div></div></main>
+<script>
+    /*
+ * ydock
+ */
+
+window.YdockUI = window.YdockUI || {};
+const C = window.DocDockConstants;
+
+YdockUI.Utils = {
+    // 複合セレクタに該当する全要素のクラス一括切り替え処理
+    toggleClassOnSelector(selector, className, shouldAdd) {
+        const elements = document.querySelectorAll(selector);
+        const action = shouldAdd ? 'add' : 'remove';
+        for (let i = 0; i < elements.length; i++) {
+            elements[i].classList[action](className);
+        }
+    },
+    // 単一ID要素のクラストグル処理
+    toggleClassById(elementId, className) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.classList.toggle(className);
+        }
+        return element;
+    }
+};
+
+YdockUI.Navigation = {
+    COLLAPSIBLE_SELECTOR: '.collapsible-wrapper, .rotate-icon, .card-container',
+    SECTION_HEADER_SELECTOR: '[id^="section-"][id$="-content"], [id^="section-"][id$="-content-icon"]',
+    
+    toggleSection(contentId, iconId) {
+        const content = YdockUI.Utils.toggleClassById(contentId, C.CssClasses.IsCollapsed);
+        YdockUI.Utils.toggleClassById(iconId, C.CssClasses.IsCollapsed);
+
+        if (content && contentId.startsWith('card-')) {
+            const cardContainer = content.closest('.card-container');
+            if (cardContainer) {
+                cardContainer.classList.toggle(C.CssClasses.IsCollapsed);
+            }
+        }
+    },
+    
+    expandAll() {
+        // 全展開時の一時的トランジション無効化設定
+        document.body.classList.add('disable-transitions');
+        YdockUI.Utils.toggleClassOnSelector(this.COLLAPSIBLE_SELECTOR, C.CssClasses.IsCollapsed, false);
+        window.requestAnimationFrame(() => {
+            // トランジション無効化の解除処理
+            document.body.classList.remove('disable-transitions');
+        });
+    },
+    
+    collapseAll() {
+        // 全折りたたみ時の一時的トランジション無効化設定
+        document.body.classList.add('disable-transitions');
+        YdockUI.Utils.toggleClassOnSelector(this.COLLAPSIBLE_SELECTOR, C.CssClasses.IsCollapsed, true);
+        
+        // 最上位セクションの展開状態維持処理
+        YdockUI.Utils.toggleClassOnSelector(this.SECTION_HEADER_SELECTOR, C.CssClasses.IsCollapsed, false);
+        window.requestAnimationFrame(() => {
+            // トランジション無効化の解除処理
+            document.body.classList.remove('disable-transitions');
+        });
+    },
+    
+    expandItem(sectionIndex, cardIndex) {
+        const elements = [
+            { id: `section-${sectionIndex}-content`, isContent: false },
+            { id: `section-${sectionIndex}-content-icon`, isContent: false },
+            { id: `card-${sectionIndex}-${cardIndex}-content`, isContent: true },
+            { id: `card-${sectionIndex}-${cardIndex}-content-icon`, isContent: false }
+        ];
+
+        elements.forEach(({ id, isContent }) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.classList.remove(C.CssClasses.IsCollapsed);
+                if (isContent) {
+                    const cardContainer = element.closest('.card-container');
+                    if (cardContainer) cardContainer.classList.remove(C.CssClasses.IsCollapsed);
+                }
+            }
+        });
+    },
+    
+    navigateToItem(itemId, sectionIndex, cardIndex) {
+        this.expandItem(sectionIndex, cardIndex);
+        const element = document.getElementById(itemId);
+        // 対象要素が存在する場合のみスクロールを実行
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+        }
+    },
+    
+    onSidebarItemClick(btn) {
+        this.navigateToItem(btn.dataset.itemId, btn.dataset.sectionIndex, btn.dataset.cardIndex);
+    }
+};
+
+YdockUI.Clipboard = {
+    // コピー成功時のアイコン演出処理
+    showFeedback(btnElement) {
+        if (!btnElement) return;
+        const original = btnElement.innerHTML;
+        btnElement.innerHTML = '<svg class="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+        btnElement.classList.add('bg-green-50');
+        setTimeout(() => {
+            btnElement.innerHTML = original;
+            btnElement.classList.remove('bg-green-50');
+        }, C.UIConstants.Animation.CopyFeedbackDurationMs);
+    },
+
+    // 非セキュア環境向けフォールバックコピー処理
+    fallbackCopy(text, btnElement) {
+        try {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = '0';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            const successful = document.execCommand('copy');
+            document.body.removeChild(textArea);
+            if (successful) {
+                this.showFeedback(btnElement);
+            }
+        } catch {
+            // フォールバック失敗時は例外を抑止
+        }
+    },
+
+    copyToClipboard(target, event) {
+        if (event) {
+            event.stopPropagation();
+        }
+        let text = '';
+        let btnElement = null;
+
+        if (typeof target === 'string') {
+            text = target;
+            if (event && event.currentTarget) {
+                btnElement = event.currentTarget;
+            }
+        } else if (target && target.getAttribute) {
+            btnElement = target;
+            text = btnElement.getAttribute('data-copy-path') || '';
+        }
+
+        if (!text) return;
+
+        // クリップボードAPI利用可能環境でのコピー実行
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+            navigator.clipboard.writeText(text).then(() => {
+                this.showFeedback(btnElement);
+            }).catch(() => {
+                this.fallbackCopy(text, btnElement);
+            });
+        } else {
+            // 非セキュア環境におけるフォールバックコピーの実行
+            this.fallbackCopy(text, btnElement);
+        }
+    },
+
+    // コピーボタン押下時のイベント委譲リスナー登録
+    init() {
+        document.body.addEventListener('click', (e) => {
+            const btn = e.target.closest(`.${C.CssClasses.CopyCmdBtn}`);
+            if (btn) {
+                this.copyToClipboard(btn, e);
+            }
+        });
+    }
+};
+
+YdockUI.DeepLink = {
+    handleNavigation(targetId) {
+        if (!targetId) {
+            const hash = window.location.hash.substring(1);
+            if (!hash) return;
+            targetId = hash;
+        }
+
+        const element = document.getElementById(targetId);
+        if (!element) return;
+
+        // 対象要素および祖先ツリーの折りたたみ状態の一括解除
+        let current = element;
+        while (current && current !== document.body) {
+            if (current.classList.contains(C.CssClasses.IsCollapsed)) {
+                current.classList.remove(C.CssClasses.IsCollapsed);
+            }
+            if (current.classList.contains('collapsible-wrapper')) {
+                current.classList.remove(C.CssClasses.IsCollapsed);
+                const icon = document.getElementById(`${current.id}-icon`);
+                if (icon) icon.classList.remove(C.CssClasses.IsCollapsed);
+            }
+            if (current.classList.contains('card-container')) {
+                current.classList.remove(C.CssClasses.IsCollapsed);
+                const cardContent = current.querySelector('.collapsible-wrapper');
+                if (cardContent) {
+                    cardContent.classList.remove(C.CssClasses.IsCollapsed);
+                    const icon = document.getElementById(`${cardContent.id}-icon`);
+                    if (icon) icon.classList.remove(C.CssClasses.IsCollapsed);
+                }
+            }
+            current = current.parentElement;
+        }
+
+        // 対象要素がカードコンテナ自身である場合の内部展開
+        if (element.classList.contains('card-container')) {
+            const cardContent = element.querySelector('.collapsible-wrapper');
+            if (cardContent) {
+                cardContent.classList.remove(C.CssClasses.IsCollapsed);
+                const icon = document.getElementById(`${cardContent.id}-icon`);
+                if (icon) icon.classList.remove(C.CssClasses.IsCollapsed);
+            }
+        }
+
+        setTimeout(() => {
+            if (element) {
+                const highlightColor = 'bg-blue-100';
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                element.classList.add(highlightColor);
+                setTimeout(() => element.classList.remove(highlightColor), C.UIConstants.Animation.HighlightDurationMs);
+            }
+        }, C.UIConstants.Animation.TooltipDelayMs);
+    },
+    
+    init() {
+        this.handleNavigation();
+        window.addEventListener('hashchange', () => this.handleNavigation());
+        
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (link) {
+                const href = link.getAttribute('href');
+                if (href && href.startsWith('#')) {
+                    e.preventDefault();
+                    this.handleNavigation(href.substring(1));
+                }
+            }
+        });
+    }
+};
+
+YdockUI.DisplayMode = {
+    setMode(mode) {
+        if (mode === C.Modes.Inline) {
+            document.body.classList.remove(C.CssClasses.ModeTooltip);
+            document.body.classList.add(C.CssClasses.ModeInline);
+        } else if (mode === C.Modes.Tooltip) {
+            document.body.classList.remove(C.CssClasses.ModeInline);
+            document.body.classList.add(C.CssClasses.ModeTooltip);
+        }
+        localStorage.setItem(C.LocalStorageKeys.DocMode, mode);
+    },
+
+    toggleAliasSwitch(checkbox) {
+        const isChecked = checkbox.checked;
+        if (!isChecked) {
+            document.body.classList.add(C.CssClasses.HideDeepAliases);
+            localStorage.setItem(C.LocalStorageKeys.AliasMode, C.Modes.Hide);
+        } else {
+            document.body.classList.remove(C.CssClasses.HideDeepAliases);
+            localStorage.setItem(C.LocalStorageKeys.AliasMode, C.Modes.Show);
+        }
+    },
+
+    toggleCompactSwitch(checkbox) {
+        const isChecked = checkbox.checked;
+        if (isChecked) {
+            document.body.classList.add(C.CssClasses.CompactMode);
+            localStorage.setItem(C.LocalStorageKeys.CompactMode, 'true');
+        } else {
+            document.body.classList.remove(C.CssClasses.CompactMode);
+            localStorage.setItem(C.LocalStorageKeys.CompactMode, 'false');
+        }
+    },
+    
+    init() {
+        const savedMode = localStorage.getItem(C.LocalStorageKeys.DocMode) || C.Modes.Inline;
+        this.setMode(savedMode);
+
+        const savedAliasMode = localStorage.getItem(C.LocalStorageKeys.AliasMode) || C.Modes.Show;
+        const checkbox = document.getElementById('alias-toggle-checkbox');
+        if (savedAliasMode === C.Modes.Hide) {
+            document.body.classList.add(C.CssClasses.HideDeepAliases);
+            if (checkbox) checkbox.checked = false;
+        } else {
+            document.body.classList.remove(C.CssClasses.HideDeepAliases);
+            if (checkbox) checkbox.checked = true;
+        }
+
+        const savedCompactMode = localStorage.getItem(C.LocalStorageKeys.CompactMode) || 'false';
+        const compactCheckbox = document.getElementById('compact-toggle-checkbox');
+        if (savedCompactMode === 'true') {
+            document.body.classList.add(C.CssClasses.CompactMode);
+            if (compactCheckbox) compactCheckbox.checked = true;
+        } else {
+            document.body.classList.remove(C.CssClasses.CompactMode);
+            if (compactCheckbox) compactCheckbox.checked = false;
+        }
+    }
+};
+
+YdockUI.Tooltip = {
+    currentPinnedTooltip: null,
+    currentPinnedRow: null,
+    
+    toggleTooltipPin(tooltipElement, row) {
+        if (this.currentPinnedTooltip === tooltipElement) {
+            tooltipElement.classList.remove(C.CssClasses.Pinned);
+            this.currentPinnedTooltip = null;
+            this.currentPinnedRow = null;
+        } else {
+            if (this.currentPinnedTooltip) {
+                this.currentPinnedTooltip.classList.remove(C.CssClasses.Pinned);
+            }
+            tooltipElement.classList.add(C.CssClasses.Pinned);
+            this.currentPinnedTooltip = tooltipElement;
+            this.currentPinnedRow = row;
+        }
+    },
+    
+    init() {
+        document.body.addEventListener('click', (e) => {
+            if (
+                e.target.closest('a') ||
+                e.target.closest('button') ||
+                e.target.closest('input') ||
+                e.target.closest('.col-resizer')
+            ) {
+                return;
+            }
+
+            const row = e.target.closest('.hover-row') || e.target.closest('.property-row-div');
+            if (row) {
+                let container = null;
+
+                if (row.tagName === 'TR') {
+                    // 対象行直下のツールチップコンテナのみを検索
+                    container = row.querySelector(':scope > td > div > .tooltip-container, :scope > td > .tooltip-container');
+                }
+
+                if (container) {
+                    this.toggleTooltipPin(container, row);
+                    return;
+                }
+            }
+
+            if (this.currentPinnedTooltip) {
+                if (!this.currentPinnedTooltip.contains(e.target) && !this.currentPinnedRow.contains(e.target)) {
+                    this.currentPinnedTooltip.classList.remove(C.CssClasses.Pinned);
+                    this.currentPinnedTooltip = null;
+                    this.currentPinnedRow = null;
+                }
+            }
+        });
+    }
+};
+
+YdockUI.ColumnResizer = {
+    isResizing: false,
+    currentLevel: null,
+    startX: 0,
+    startWidth: 0,
+    tableWidth: 0,
+
+    // 全リサイザーの高さ同期処理
+    updateResizerHeights() {
+        const resizers = document.querySelectorAll('.col-resizer');
+        const updates = [];
+
+        // 読み取り処理
+        for (let i = 0; i < resizers.length; i++) {
+            const resizer = resizers[i];
+            const th = resizer.closest('th');
+            if (!th) continue;
+            const table = th.closest('table');
+            if (!table) continue;
+
+            const height = table.offsetHeight;
+            if (height > 0) {
+                updates.push({ resizer, height });
+            }
+        }
+
+        // スタイル適用処理
+        for (let i = 0; i < updates.length; i++) {
+            updates[i].resizer.style.height = `${updates[i].height}px`;
+        }
+    },
+
+    init() {
+        document.body.addEventListener('mousedown', (e) => {
+            const resizer = e.target.closest('.col-resizer');
+            if (!resizer) return;
+
+            this.isResizing = true;
+            this.currentLevel = resizer.dataset.level;
+            this.startX = e.pageX;
+
+            const th = resizer.closest('th');
+            const table = resizer.closest('table');
+            this.tableWidth = table.getBoundingClientRect().width;
+            this.startWidth = th.getBoundingClientRect().width;
+
+            document.body.style.cursor = 'ew-resize';
+            document.body.style.userSelect = 'none';
+            resizer.classList.add(C.CssClasses.IsResizing);
+            document.body.classList.add(C.CssClasses.IsResizing);
+        });
+
+        document.documentElement.addEventListener('mousemove', (e) => {
+            if (!this.isResizing) return;
+
+            const diff = e.pageX - this.startX;
+            const newWidthPx = this.startWidth + diff;
+            let newWidthPercent = (newWidthPx / this.tableWidth) * 100;
+
+            if (
+                newWidthPercent <= C.UIConstants.Resizing.MinColumnWidthPercent ||
+                newWidthPercent >= C.UIConstants.Resizing.MaxColumnWidthPercent
+            ) {
+                document.body.style.cursor = 'default';
+            } else {
+                document.body.style.cursor = 'ew-resize';
+            }
+
+            newWidthPercent = Math.max(
+                C.UIConstants.Resizing.MinColumnWidthPercent,
+                Math.min(C.UIConstants.Resizing.MaxColumnWidthPercent, newWidthPercent)
+            );
+
+            const varName = this.currentLevel !== null ? `--col-width-level-${this.currentLevel}` : '--col-width-level-default';
+            // 列幅CSS変数の更新処理
+            window.requestAnimationFrame(() => {
+                document.documentElement.style.setProperty(varName, `${newWidthPercent}%`);
+            });
+        });
+
+        document.documentElement.addEventListener('mouseup', () => {
+            if (!this.isResizing) return;
+
+            this.isResizing = false;
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+            document.body.classList.remove(C.CssClasses.IsResizing);
+
+            document.querySelectorAll('.col-resizer').forEach((r) => {
+                r.classList.remove(C.CssClasses.IsResizing);
+            });
+
+            this.currentLevel = null;
+            // リサイズ確定後のリサイザー高さ同期処理
+            this.updateResizerHeights();
+        });
+
+        window.addEventListener('resize', () => this.updateResizerHeights());
+        setTimeout(() => this.updateResizerHeights(), 100);
+    }
+};
+
+YdockUI.SidebarResizer = {
+    init() {
+        const sidebar = document.getElementById('sidebar');
+        const sidebarResizer = document.getElementById('sidebar-resizer');
+
+        if (sidebar && sidebarResizer) {
+            let isSidebarResizing = false;
+            let sidebarStartX = 0;
+            let sidebarStartWidth = 0;
+
+            sidebarResizer.addEventListener('mousedown', (e) => {
+                isSidebarResizing = true;
+                sidebarStartX = e.pageX;
+                sidebarStartWidth = sidebar.getBoundingClientRect().width;
+
+                document.body.style.cursor = 'ew-resize';
+                document.body.style.userSelect = 'none';
+                sidebarResizer.classList.add(C.CssClasses.IsResizing);
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isSidebarResizing) return;
+
+                const diff = e.pageX - sidebarStartX;
+                const newWidth = sidebarStartWidth + diff;
+
+                const minWidth = C.UIConstants.Resizing.MinSidebarWidthPx;
+                const maxWidth = window.innerWidth * C.UIConstants.Resizing.MaxSidebarWidthRatio;
+
+                const clampedWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
+                sidebar.style.width = `${clampedWidth}px`;
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (!isSidebarResizing) return;
+
+                isSidebarResizing = false;
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+                sidebarResizer.classList.remove(C.CssClasses.IsResizing);
+            });
+        }
+    }
+};
+
+// Initialize all modules on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+    YdockUI.Clipboard.init();
+    YdockUI.DisplayMode.init();
+    YdockUI.DeepLink.init();
+    YdockUI.Tooltip.init();
+    YdockUI.ColumnResizer.init();
+    YdockUI.SidebarResizer.init();
+});
+
+</script>
+</body></html>
